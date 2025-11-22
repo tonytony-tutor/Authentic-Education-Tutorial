@@ -1,0 +1,490 @@
+import React, { useState } from 'react';
+import { 
+  BookOpen, 
+  Users, 
+  Compass, 
+  Clock, 
+  MapPin, 
+  Target, 
+  Search, 
+  GitMerge, 
+  PlayCircle, 
+  Award, 
+  Repeat, 
+  Heart, 
+  Shield, 
+  Zap, 
+  Menu,
+  X,
+  ChevronRight,
+  AlertCircle,
+  Smile
+} from 'lucide-react';
+
+// --- Data Constants ---
+
+const CORE_BELIEFS = [
+  {
+    title: "人類本能 (起點)",
+    icon: <Heart className="w-8 h-8 text-rose-500" />,
+    desc: "教育不應違背天性。我們從生存、好奇、感官、模仿與創造出發，喚醒孩子內在的驅動力。",
+    details: ["生存本能", "好奇/感官/情緒", "群體/模仿/秩序/創造"]
+  },
+  {
+    title: "真實世界 (方向)",
+    icon: <Compass className="w-8 h-8 text-indigo-600" />,
+    desc: "不把學校當溫室。強調誠實面對、踏實成長、實驗精神與實踐能力，培養能在現實中生存的人。",
+    details: ["五實：真實、誠實、踏實、實驗、實踐", "拒絕虛假的獎勵與懲罰"]
+  },
+  {
+    title: "三生九力 (目標)",
+    icon: <Target className="w-8 h-8 text-emerald-600" />,
+    desc: "教育的終極目標是具備「生存力、生活力、生命力」，並發展出九項關鍵素養。",
+    details: ["生存力：自律、韌性", "生活力：溝通、情感", "生命力：批判、藝術"]
+  }
+];
+
+const LEARRRN_STEPS = [
+  {
+    step: "L",
+    name: "Locate 探索定位",
+    icon: <MapPin />,
+    summary: "探索學習內容、判斷自我狀態",
+    desc: "這是一切的起點。不只是「要學什麼」，而是誠實面對「我現在在哪裡」。",
+    action: "判斷自我程度 (Gap) → 打造學習動力 (Motivation)"
+  },
+  {
+    step: "E",
+    name: "Establish 建立目標",
+    icon: <Target />,
+    summary: "設定可完成、可評估的目標",
+    desc: "目標不能只是空想。必須具備具體性、挑戰性與可行性。",
+    action: "設定 SMART 目標 → 增強自我效能感"
+  },
+  {
+    step: "A",
+    name: "Acquire 獲取資源",
+    icon: <Search />,
+    summary: "尋找、篩選、統整資源",
+    desc: "在這個資訊爆炸時代，懂得「判斷資訊信度 (CRAP測試)」比死背更重要。",
+    action: "多元蒐集 → 判斷信度 → 整合運用"
+  },
+  {
+    step: "R",
+    name: "Route 設定策略",
+    icon: <GitMerge />,
+    summary: "拆解步驟與時間規劃",
+    desc: "將大目標拆解為小任務。決定 What, When, Who, Where, How。",
+    action: "內容拆解 → 環境規劃 → 自律機制設計"
+  },
+  {
+    step: "R",
+    name: "Run & Refine 執行調整",
+    icon: <PlayCircle />,
+    summary: "執行策略並彈性調整",
+    desc: "這是最漫長的過程。運用番茄鐘保持專注，運用日誌反思調整。",
+    action: "穩定執行 → 解決問題 → 動態優化"
+  },
+  {
+    step: "R",
+    name: "Review & Reveal 評量呈現",
+    icon: <Award />,
+    summary: "成果驗證與發表",
+    desc: "學習必須有產出。透過展演或教學（費曼學習法）來驗證自己是否真的學會。",
+    action: "成果驗證 → 內容展現 → 蒐集多元反饋"
+  },
+  {
+    step: "N",
+    name: "Note & Next 紀錄延伸",
+    icon: <Repeat />,
+    summary: "反思內化與接續規劃",
+    desc: "一個循環的結束，是下一個循環的開始。製作學習檔案，將經驗內化。",
+    action: "深度反思 → 製作檔案 → 延伸新計畫"
+  }
+];
+
+const ROLES_DATA = {
+  student: {
+    title: "實孩 (學生)",
+    color: "bg-amber-100 text-amber-900",
+    duties: [
+      "自主管理：使用「個人行事曆」而非聯絡簿。",
+      "生活自理：自備餐具、負責環境清潔、無手機。",
+      "團體意識：理解個人缺席會影響團隊，為自己的行為負責。",
+      "真實面對：不需討好老師，呈現最真實的學習樣貌。"
+    ]
+  },
+  teacher: {
+    title: "導師 (引路人)",
+    color: "bg-sky-100 text-sky-900",
+    duties: [
+      "不給指令：是引導者而非權威灌輸者。",
+      "不給獎懲：運用「隔離與對話」處理衝突，而非記過。",
+      "全人視角：具備九大能力，關注學生的學習、心理與家庭。",
+      "課程設計：運用「三五九原則」設計專案與活動。"
+    ]
+  },
+  parent: {
+    title: "合夥人 (家長)",
+    color: "bg-stone-100 text-stone-900",
+    duties: [
+      "信任授權：支持學校的專業判斷與行政規劃。",
+      "陪伴者：取代「監督」與「放任」，練習傾聽。",
+      "界線意識：不隨意私訊老師，遵守溝通機制。",
+      "共同成長：必需參與親師座談與家庭對談。"
+    ]
+  }
+};
+
+// --- Components ---
+
+const NavItem = ({ label, active, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`px-4 py-2 font-medium transition-colors duration-200 ${
+      active 
+        ? 'text-indigo-700 border-b-2 border-indigo-600' 
+        : 'text-slate-500 hover:text-slate-800'
+    }`}
+  >
+    {label}
+  </button>
+);
+
+const SectionTitle = ({ title, subtitle }) => (
+  <div className="mb-8 text-center">
+    <h2 className="text-3xl font-bold text-slate-800">{title}</h2>
+    {subtitle && <p className="mt-2 text-slate-600 max-w-2xl mx-auto">{subtitle}</p>}
+  </div>
+);
+
+const Card = ({ children, className = "" }) => (
+  <div className={`bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow duration-300 ${className}`}>
+    {children}
+  </div>
+);
+
+// --- Main App ---
+
+export default function App() {
+  const [activeTab, setActiveTab] = useState('home');
+  const [activeLearnStep, setActiveLearnStep] = useState(0);
+  const [activeRole, setActiveRole] = useState('student');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'home':
+        return (
+          <div className="space-y-12 animate-fadeIn">
+            {/* Hero Section */}
+            <div className="relative overflow-hidden bg-gradient-to-r from-indigo-900 to-slate-800 rounded-3xl text-white p-12 shadow-xl">
+              <div className="relative z-10 max-w-3xl">
+                <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight">
+                  實人教育
+                  <span className="block text-2xl md:text-3xl font-light mt-2 opacity-90">
+                    回歸本能 · 連結真實 · 實踐生命
+                  </span>
+                </h1>
+                <p className="text-lg text-indigo-100 mb-8 leading-relaxed">
+                  這不是一間傳統學校，而是一個基於「原型教育系統」誕生的有機體。
+                  我們拒絕工業化的填鴨，邀請家長與孩子共同誠實地面對成長的本質。
+                </p>
+                <button 
+                  onClick={() => setActiveTab('system')}
+                  className="bg-white text-indigo-900 px-8 py-3 rounded-full font-bold hover:bg-indigo-50 transition-colors flex items-center gap-2"
+                >
+                  探索學習系統 <ChevronRight size={20} />
+                </button>
+              </div>
+              {/* Abstract Background Elements */}
+              <div className="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+              <div className="absolute bottom-0 right-20 w-72 h-72 bg-rose-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+            </div>
+
+            {/* Core Beliefs Grid */}
+            <div>
+              <SectionTitle title="教育信念" subtitle="我們相信教育不應是外加的塑型，而是內在的喚醒。" />
+              <div className="grid md:grid-cols-3 gap-6">
+                {CORE_BELIEFS.map((belief, idx) => (
+                  <Card key={idx} className="flex flex-col items-center text-center h-full">
+                    <div className="mb-4 p-3 bg-slate-50 rounded-full">{belief.icon}</div>
+                    <h3 className="text-xl font-bold mb-3 text-slate-800">{belief.title}</h3>
+                    <p className="text-slate-600 mb-6 text-sm leading-relaxed">{belief.desc}</p>
+                    <ul className="mt-auto space-y-2 text-left w-full">
+                      {belief.details.map((detail, i) => (
+                        <li key={i} className="text-xs text-slate-500 bg-slate-50 px-3 py-2 rounded border border-slate-100">
+                          {detail}
+                        </li>
+                      ))}
+                    </ul>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'system':
+        return (
+          <div className="animate-fadeIn">
+            <SectionTitle 
+              title="LEARRRN 自主學習系統" 
+              subtitle="這是一套將「自學」具象化的操作系統，引導學生從被動接收轉為主動策展。" 
+            />
+            
+            <div className="flex flex-col lg:flex-row gap-8">
+              {/* Steps Navigation */}
+              <div className="lg:w-1/3 space-y-2">
+                {LEARRRN_STEPS.map((item, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setActiveLearnStep(index)}
+                    className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-all duration-200 ${
+                      activeLearnStep === index 
+                        ? 'bg-indigo-600 text-white shadow-md transform scale-105' 
+                        : 'bg-white hover:bg-slate-50 text-slate-600 border border-slate-200'
+                    }`}
+                  >
+                    <div className={`font-bold font-mono ${activeLearnStep === index ? 'text-indigo-200' : 'text-indigo-600'}`}>
+                      {item.step}
+                    </div>
+                    <div className="font-medium">{item.name}</div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Active Step Content */}
+              <div className="lg:w-2/3">
+                <Card className="h-full border-t-4 border-t-indigo-500 flex flex-col justify-center min-h-[400px]">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="p-4 bg-indigo-50 rounded-full text-indigo-600">
+                      {React.cloneElement(LEARRRN_STEPS[activeLearnStep].icon, { size: 40 })}
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-slate-800">{LEARRRN_STEPS[activeLearnStep].name}</h3>
+                      <p className="text-indigo-600 font-medium">{LEARRRN_STEPS[activeLearnStep].summary}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <div>
+                      <h4 className="text-sm uppercase tracking-wide text-slate-400 font-semibold mb-2">核心概念</h4>
+                      <p className="text-lg text-slate-700 leading-relaxed">
+                        {LEARRRN_STEPS[activeLearnStep].desc}
+                      </p>
+                    </div>
+                    
+                    <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                      <h4 className="text-sm uppercase tracking-wide text-slate-400 font-semibold mb-2 flex items-center gap-2">
+                        <Zap size={16} /> 具體行動
+                      </h4>
+                      <p className="text-slate-800 font-medium">
+                        {LEARRRN_STEPS[activeLearnStep].action}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            </div>
+
+            <div className="mt-12 bg-orange-50 rounded-xl p-6 border border-orange-200 flex items-start gap-4">
+              <AlertCircle className="text-orange-500 shrink-0 mt-1" />
+              <div>
+                <h4 className="font-bold text-orange-800 mb-1">不只是系統，更是生活</h4>
+                <p className="text-orange-700 text-sm">
+                  這套系統不僅用於學科，更應用於生活。從「我想學鋼琴」到「我想解決與朋友的衝突」，都能透過 LEARRRN 系統來思考與執行。
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'people':
+        return (
+          <div className="animate-fadeIn">
+            <SectionTitle 
+              title="親師生鐵三角" 
+              subtitle="在實人教育，沒有旁觀者。我們定義了清晰的角色與界線，共同撐起教育的空間。" 
+            />
+
+            <div className="grid md:grid-cols-3 gap-4 mb-8">
+              {Object.entries(ROLES_DATA).map(([key, data]) => (
+                <button
+                  key={key}
+                  onClick={() => setActiveRole(key)}
+                  className={`p-4 rounded-xl border-2 transition-all duration-200 text-center ${
+                    activeRole === key
+                      ? 'border-indigo-600 bg-indigo-50 text-indigo-800 shadow-sm'
+                      : 'border-transparent bg-white hover:bg-slate-50 text-slate-500'
+                  }`}
+                >
+                  <h3 className="font-bold text-lg">{data.title}</h3>
+                </button>
+              ))}
+            </div>
+
+            <div className="relative">
+              <Card className={`border-l-8 ${
+                activeRole === 'student' ? 'border-l-amber-500' : 
+                activeRole === 'teacher' ? 'border-l-sky-500' : 'border-l-stone-500'
+              }`}>
+                <div className="flex flex-col md:flex-row gap-8 items-start">
+                  <div className={`w-full md:w-1/3 p-6 rounded-lg flex flex-col items-center justify-center text-center aspect-square ${ROLES_DATA[activeRole].color}`}>
+                    {activeRole === 'student' && <Smile size={64} className="mb-4 opacity-80" />}
+                    {activeRole === 'teacher' && <Compass size={64} className="mb-4 opacity-80" />}
+                    {activeRole === 'parent' && <Users size={64} className="mb-4 opacity-80" />}
+                    <h2 className="text-2xl font-bold">{ROLES_DATA[activeRole].title}</h2>
+                  </div>
+                  
+                  <div className="w-full md:w-2/3">
+                    <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                      核心責任與樣貌
+                    </h3>
+                    <div className="grid gap-4">
+                      {ROLES_DATA[activeRole].duties.map((duty, idx) => (
+                        <div key={idx} className="flex items-start gap-3 p-3 hover:bg-slate-50 rounded-lg transition-colors">
+                          <div className="mt-1.5 w-2 h-2 rounded-full bg-slate-400 shrink-0" />
+                          <p className="text-slate-700 leading-relaxed">
+                            <span className="font-bold text-slate-900">{duty.split('：')[0]}：</span>
+                            {duty.split('：')[1]}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
+        );
+
+      case 'life':
+        return (
+          <div className="animate-fadeIn">
+             <SectionTitle 
+              title="學制與生活" 
+              subtitle="打破工業化的鐘聲，創造有機的學習節奏。" 
+            />
+
+            <div className="grid md:grid-cols-2 gap-8">
+              <Card>
+                <div className="flex items-center gap-3 mb-6">
+                  <Clock className="text-indigo-600" size={28}/>
+                  <h3 className="text-xl font-bold text-slate-800">三季學制</h3>
+                </div>
+                <div className="space-y-6 relative before:absolute before:left-[19px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
+                  <div className="relative pl-12">
+                    <div className="absolute left-0 top-1 w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center text-amber-600 text-xs font-bold">秋</div>
+                    <h4 className="font-bold text-slate-800">秋季課 (Sep - Nov)</h4>
+                    <p className="text-sm text-slate-500">約13週。著重基礎建立與探索。隨後有3週季休。</p>
+                  </div>
+                  <div className="relative pl-12">
+                    <div className="absolute left-0 top-1 w-10 h-10 bg-sky-100 rounded-full flex items-center justify-center text-sky-600 text-xs font-bold">冬</div>
+                    <h4 className="font-bold text-slate-800">冬季課 (Dec - Mar)</h4>
+                    <p className="text-sm text-slate-500">跨越春節。著重深耕與實作。隨後有3週季休。</p>
+                  </div>
+                  <div className="relative pl-12">
+                    <div className="absolute left-0 top-1 w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 text-xs font-bold">春</div>
+                    <h4 className="font-bold text-slate-800">春季課 (Apr - Jul)</h4>
+                    <p className="text-sm text-slate-500">著重展現與統整。隨後有長達6週的暑假，鼓勵自主探索。</p>
+                  </div>
+                </div>
+              </Card>
+
+              <Card>
+                <div className="flex items-center gap-3 mb-6">
+                  <Shield className="text-rose-600" size={28}/>
+                  <h3 className="text-xl font-bold text-slate-800">底線與規範</h3>
+                </div>
+                <div className="space-y-4">
+                  <div className="bg-rose-50 p-4 rounded-lg border border-rose-100">
+                    <h4 className="font-bold text-rose-800 mb-2">絕對禁止</h4>
+                    <ul className="text-sm text-rose-700 space-y-1 list-disc list-inside">
+                      <li>攜帶智慧型手機 (到校需關機)</li>
+                      <li>攜帶零食、飲料、玩具、桌遊</li>
+                      <li>攜帶大量現金</li>
+                      <li>無故曠課 (連續三天或一季五天即啟動轉學機制)</li>
+                    </ul>
+                  </div>
+                  <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
+                    <h4 className="font-bold text-indigo-800 mb-2">日常責任</h4>
+                    <ul className="text-sm text-indigo-700 space-y-1 list-disc list-inside">
+                      <li>每日 8:20 前到校，17:00 放學</li>
+                      <li>自備餐具並每日帶回清洗</li>
+                      <li>使用「個人行事曆」規劃任務</li>
+                      <li>參與「大下課」戶外活動 (30-40分鐘)</li>
+                    </ul>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-800 selection:bg-indigo-200">
+      {/* Mobile Header */}
+      <div className="md:hidden bg-white p-4 flex justify-between items-center shadow-sm sticky top-0 z-50">
+        <div className="font-bold text-xl text-indigo-900 tracking-tight">實人教育</div>
+        <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-slate-600">
+          {mobileMenuOpen ? <X /> : <Menu />}
+        </button>
+      </div>
+
+      {/* Mobile Menu Dropdown */}
+      {mobileMenuOpen && (
+        <div className="md:hidden bg-white border-b border-slate-200 absolute w-full z-40 shadow-xl">
+          <div className="flex flex-col p-4 space-y-2">
+            <button onClick={() => {setActiveTab('home'); setMobileMenuOpen(false)}} className="text-left py-2 font-bold text-slate-700">關於實人</button>
+            <button onClick={() => {setActiveTab('system'); setMobileMenuOpen(false)}} className="text-left py-2 font-bold text-slate-700">學習系統</button>
+            <button onClick={() => {setActiveTab('people'); setMobileMenuOpen(false)}} className="text-left py-2 font-bold text-slate-700">角色職責</button>
+            <button onClick={() => {setActiveTab('life'); setMobileMenuOpen(false)}} className="text-left py-2 font-bold text-slate-700">學制生活</button>
+          </div>
+        </div>
+      )}
+
+      {/* Desktop Navigation */}
+      <div className="hidden md:flex items-center justify-center bg-white shadow-sm sticky top-0 z-40 px-8">
+        <div className="max-w-5xl w-full flex justify-between items-center h-16">
+          <div className="font-bold text-2xl text-indigo-900 tracking-tight flex items-center gap-2 cursor-pointer" onClick={() => setActiveTab('home')}>
+            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-serif italic">R</div>
+            實人教育
+          </div>
+          <div className="flex space-x-4">
+            <NavItem label="關於實人" active={activeTab === 'home'} onClick={() => setActiveTab('home')} />
+            <NavItem label="學習系統" active={activeTab === 'system'} onClick={() => setActiveTab('system')} />
+            <NavItem label="角色職責" active={activeTab === 'people'} onClick={() => setActiveTab('people')} />
+            <NavItem label="學制生活" active={activeTab === 'life'} onClick={() => setActiveTab('life')} />
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <main className="max-w-5xl mx-auto px-4 py-8 md:py-12 min-h-[calc(100vh-64px)]">
+        {renderContent()}
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-slate-900 text-slate-400 py-12 mt-12 border-t border-slate-800">
+        <div className="max-w-5xl mx-auto px-4 text-center">
+          <div className="flex justify-center gap-2 mb-4 text-indigo-400">
+            <BookOpen size={24} />
+          </div>
+          <p className="mb-2 font-medium text-slate-300">實人實驗教育團體</p>
+          <p className="text-sm opacity-60 max-w-lg mx-auto">
+            基於「原型教育」系統。在這裡，我們不只教知識，更教導如何成為一個真實的人。
+          </p>
+          <div className="mt-8 text-xs text-slate-600 border-t border-slate-800 pt-8">
+            © 2024 Real Person Education. Internal Reference Only.
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
